@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>demo</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        #app{
+            margin:10px 15px;
+        }
+        .downImg{
+            float:left;
+        }
+        .col{
+            margin:15px 15px
+        }
+        .downImg img{
+            width:150px;
+            height:150px;
+        }
+        .title{
+            margin-left:180px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <el-button @click="getImage">获取识别</el-button>
+        <div v-for="file in Images">
+            <el-row>
+                <el-col v-for="img in file" class="col" :sm="12">
+                    <div class="downImg"><img :src="img.path" alt=""></div>
+                    <div class="title">
+                        <p>图片名:{{img.filename}}</p>
+                        <p>识别前:{{img.archetype}}</p>
+                        <p>识别后:{{img.type}}</p>
+                    </div>
+                </el-col>
+            </el-row>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script>
+        var vm=new Vue({
+            el:'#app',
+            data:{
+                Images:[]
+            },
+            methods:{
+                getImage(){
+                    axios.get('/download',{}).then(res=>{
+                        if(res.status===200){
+                            this.Images=res.data
+                        }
+                    })
+                }
+            }
+        })
+    </script>
+</body>
+</html>

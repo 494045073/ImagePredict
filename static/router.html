@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>vue上传demo</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        .content {
+            text-align: center;
+        }
+        .title {
+            margin: 20px 20PX;
+            font-size: 24px;
+        }
+        .img-box{
+            float:left;
+        }
+        .img-box img {
+            width: 150px;
+            height: 150px;
+        }
+        .col{
+            margin-top:10px;
+        }
+        .name {
+            width:250px;
+            display:block;
+            margin-left:180px;
+            margin-top:20px;
+        }
+        .up-temp{
+            margin: 40px 330px;
+        }
+        .upImage img{
+            width:200px;
+            height:200px
+        }
+        .up-img{
+            text-align: center;
+            margin: 20px 0;
+        }
+        .down-btn{
+            margin: 40px 20px 0px 1085px;
+        }
+        .display{
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="content">
+                <div class="page-header">
+                    <h1 class="text-center">人工智能图片预测及展示</h1>
+                </div>
+                <el-row>
+                    <el-col :span="12">
+                        <router-link to="/upLoad">
+                            <el-button round>图片预测</el-button>
+                        </router-link>
+                    </el-col>
+                    <el-col :span="12">
+                        <router-link to="/downLoad">
+                            <el-button round>图片展示</el-button>
+                        </router-link>
+                    </el-col>
+                </el-row>
+            </div>
+            <div>
+                <router-view></router-view>
+            </div>
+        </div>
+    </div>
+    <template id="upTemp">
+        <div class="up-temp">
+            <input type="file" style="display: none;" ref="input" @change="fileChange"></input>
+            <el-button @click="handleClick" type="primary">上传预测<i class="el-icon-upload el-icon--right"></i></el-button>
+            <div class="up-img">
+                <div class="upImage">
+                    <img :src="image" alt="" v-show="image.length>0">
+                </div>
+                <el-tag type="info" v-show="retData!=''" class="title">图片预测结果:{{retData}}</el-tag>
+            </div>
+        </div>
+    </template>
+    <template id="downTemp">
+        <div>
+            <el-button class="down-btn el-icon-folder-opened" type="primary" @click="getImage">获取图片</el-button>
+            <div v-for="(file, index) in imageData" class="display" :key="index">
+                <el-tag class="title" type="success">{{index}} 共{{file.length}}张</el-tag>
+                <el-row>
+                    <el-col :lg="8" :md="12" v-for="(img,i) in file" :key="i" class="col">
+                        <div class="img-box">
+                            <img :src="img.path">
+                        </div>
+                        <el-tag type="info" size="small" class="name">图片名:{{img.filename}}</el-tag>
+                        <el-tag type="info" size="small" class="name">识别结果:{{img.type}}</el-tag>
+                    </el-col>
+                </el-row>
+            </div>
+        </div>
+    </template>
+</body>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script type="text/javascript" src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+<script type="text/javascript">
+    var downLoad = {
+        template: "#downTemp",
+        data() {
+            return {
+                imageData: {}
+            }
+        },
+        methods: {
+            getImage() {
+                axios.get("/download").then(res => {
+                    if (res.status === 200) {
+                        this.imageData = res.data
+                        console.log(res)
+                    }
+                })
+            }
+        }
+    }
+    var upLoad = {
+        template: "#upTemp",
+        data() {
+            return {
+                image: '',
+                file: '',
+                retData: ''
+            }
+        },
+        methods: {
+            handleClick() {
+                this.$refs['input'].click();
+            },
+            fileChange(e) {
+                this.file = e.target.files[0];
+                let reader = new FileReader()
+                reader.readAsDataURL(this.file)
+                reader.onloadend = ()=> {
+                    this.image = reader.result
+                }
+                this.upload()
+            },
+            upload() {
+                let param = new FormData();
+                param.append('file', this.file);
+                axios.post('/upload', param).then(res => {
+                    if (res.status === 200) {
+                        this.retData = res.data;
+                        console.log(this.retData)
+                    } else {}
+                }).catch(function (error) {})
+            }
+        }
+    }
+    var router = new VueRouter({
+        routes: [
+            { path: '/', redirect: 'upLoad' },
+            { path: "/downLoad", component: downLoad, name: 'downLoad' },
+            { path: "/upLoad", component: upLoad, name: 'upLoad' },
+        ]
+    })
+    var app = new Vue({
+        el: '#app',
+        data: {},
+        router
+    })
+</script>
+</html>

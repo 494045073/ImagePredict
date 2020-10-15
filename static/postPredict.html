@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<style>
+		#app{text-align: center;}
+		.up{
+			margin:30px 30px;
+		}
+		.Image img{
+			height: 200px;
+			width: 200px;
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<div>
+            <input type="file" name="file" @change="fileChange">
+            <el-button @click="input">点击上传</el-button>
+            <div class="up">
+				<div class="Image" v-show="image!=''"><img :src="image" alt=""></div>
+				<div class="title">
+					<el-tag v-show="reData!=''" class="tag">文件名:{{file.name}}</el-tag>
+					<el-tag v-show="reData!=''" class="tag">识别类别:{{reData.predict_classname}}</el-tag>
+				</div>
+			</div>
+        </div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+	<script>
+			var vm=new Vue({
+			el:'#app',
+			data:{
+				file:'',
+				image:'',
+				reData:'',
+				Images:[],
+			},
+			methods:{
+				input(){
+					this.upload()
+				},
+				fileChange(e){
+				  this.file=e.target.files[0]
+				  console.log(this.file)
+				  let reader = new FileReader()
+				  reader.readAsDataURL(this.file)
+				  reader.onloadend=()=>{
+					this.image=reader.result
+				  }
+				},
+				upload(){
+					let param=new FormData()
+					param.append('file',this.file)
+					axios.post('/upload',param).then(res=>{
+						if(res.status===200){
+							this.reData=res.data
+						}
+					})
+				},
+			}
+		})
+	</script>
+</body>
+</html>
